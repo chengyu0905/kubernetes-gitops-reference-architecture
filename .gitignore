@@ -1,0 +1,37 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs & temp
+*.log
+tmp/
+.cache/
+dist/
+build/
+
+# Python/Script caches
+__pycache__/
+*.pyc
+
+# Credentials
+*.env
+.env*
+secrets/
+*.pem
+*.key
+
+# Helm / package artifacts 
+*.tgz
+
+# Kube local state
+.kube/
+.k9s/
+
+# !*.yaml
+# !*.yml
+# !argocd/
+# !kargo/
+# !kro/
