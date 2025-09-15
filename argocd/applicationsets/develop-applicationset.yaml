@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: develop-applicationset
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: <your-git-repo>
+        revision: HEAD
+        directories:
+          - path: develop/*
+  template:
+    metadata:
+      name: '{{path.basename}}-dev-app'
+      annotations:
+        kargo.akuity.io/authorized-stage: develop:{{path.basename}}-dev-stage
+    spec:
+      project: develop
+      source:
+        repoURL: <your-git-repo>
+        targetRevision: HEAD
+        path: '{{path}}'
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: develop
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
