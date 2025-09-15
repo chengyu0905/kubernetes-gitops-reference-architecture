@@ -1,4 +1,4 @@
-# GitOps Architecture Examples (Kargo + Kro + Argo CD, MicroK8s)
+# GitOps Architecture Examples (Kargo + Kro + Argo CD)
 
 **Single source of truth:** Git. **Change unit:** image tag (SemVer).
 **Responsibilities:** Kargo decides/promotes/rolls back → Git commit → Argo CD reconciles → Kro renders resources.
