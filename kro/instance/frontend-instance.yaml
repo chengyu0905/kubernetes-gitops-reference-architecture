@@ -1,0 +1,20 @@
+apiVersion: kro.run/v1alpha1
+kind: FrontendAppV2
+metadata:
+  name: wsp-frontend
+  namespace: develop
+spec:
+  name: wsp-frontend
+  namespace: develop
+  values:
+    configMap:
+      data:
+        API_HTTP_URL: https://example.com/api
+        TIME_ZONE: Asia/Taipei
+    deployment:
+      image: <your image>
+      version: <image tag>
+      replicas: 1
+    service:
+      port: 51001
+      targetPort: 3000
