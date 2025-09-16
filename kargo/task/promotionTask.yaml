@@ -1,0 +1,64 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote-kro-instance
+  namespace: develop
+spec:
+  vars:
+    - name: gitopsRepo
+      value: <your git repo>
+    - name: imageRepo
+      value: <your image repo>
+    - name: srcPath
+      value: ./repo
+    - name: outPath
+      value: ./repo
+    - name: targetBranch
+      value: main
+    - name: instancePath
+      value: develop/frontend/instance.yaml
+    - name: warehouseName
+      value: frontend-dev-image
+    - name: appName
+      value: frontend-dev-app
+
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitopsRepo }}
+        checkout:
+          - branch: ${{ vars.targetBranch }}
+            path: ${{ vars.srcPath }}
+
+    - uses: yaml-parse
+      config:
+        path: ${{ vars.srcPath }}/${{ vars.instancePath }}
+        outputs:
+          - name: oldTag
+            fromExpression: spec.values.deployment.tag
+
+    - uses: yaml-update
+      as: update-image
+      config:
+        path: ${{ vars.srcPath }}/${{ vars.instancePath }}
+        updates:
+          - key: spec.values.deployment.tag
+            value: ${{ quote(imageFrom(vars.imageRepo, warehouse(vars.warehouseName)).Tag) }}
+
+    - uses: git-commit
+      as: commit
+      config:
+        path: ${{ vars.outPath }}
+        message: ${{ task.outputs['update-image'].commitMessage }}
+
+    - uses: git-push
+      config:
+        path: ${{ vars.outPath }}
+
+    - uses: argocd-update
+      config:
+        apps:
+          - name: ${{ vars.appName }}
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs['commit'].commit }}
