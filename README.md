@@ -6,12 +6,12 @@
 ## Quick Navigation
 
 * Argo CD ApplicationSet: `argocd/applicationsets/develop-applicationset.yaml`
-* Kro Instance (frontend-dev): `kro/instances/instance.yaml`
+* Kro Instance (frontend-dev): `kro/instance/instance.yaml`
 * Kargo
 
-  * Warehouse: `kargo/warehouses/frontend-dev-image.yaml`
-  * Stage: `kargo/stages/frontend-dev-stage.yaml`
-  * PromotionTask: `kargo/tasks/promote-kro-instance.yaml`
+  * Warehouse: `kargo/warehouse/frontend-dev-image.yaml`
+  * Stage: `kargo/stage/frontend-dev-stage.yaml`
+  * PromotionTask: `kargo/task/promote-kro-instance.yaml`
 
 ## Related Medium Articles
 
