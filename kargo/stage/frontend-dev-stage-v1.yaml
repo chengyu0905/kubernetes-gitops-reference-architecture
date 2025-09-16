@@ -1,0 +1,67 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  annotations:
+    kargo.akuity.io/color: lime
+  name: frontend-dev-stage
+  namespace: develop
+spec:
+  promotionTemplate:
+    spec:
+      steps:
+      - config:
+          checkout:
+          - branch: main
+            path: ${{ vars.srcPath }}
+          repoURL: ${{ vars.gitopsRepo }}
+        uses: git-clone
+      - config:
+          outputs:
+          - fromExpression: spec.values.deployment.tag
+            name: oldTag
+          path: ${{ vars.srcPath }}/develop/frontend/frontend-dev-instance.yaml
+        uses: yaml-parse
+      - as: update-image
+        config:
+          path: ${{ vars.srcPath }}/develop/frontend/frontend-dev-instance.yaml
+          updates:
+          - key: spec.values.deployment.tag
+            value: ${{ quote(imageFrom(vars.imageRepo, warehouse(vars.warehouseName)).Tag)
+              }}
+        uses: yaml-update
+      - as: commit
+        config:
+          messageFromSteps:
+          - update-image
+          path: ${{ vars.outPath }}
+        uses: git-commit
+      - config:
+          path: ${{ vars.outPath }}
+        uses: git-push
+      - config:
+          apps:
+          - name: frontend-dev-app
+            sources:
+            - desiredRevision: ${{ outputs.commit.commit }}
+              repoURL: ${{ vars.gitopsRepo }}
+        uses: argocd-update
+      vars:
+      - name: gitopsRepo
+        value: <your git repo>
+      - name: imageRepo
+        value: <your image repo>
+      - name: srcPath
+        value: ./repo
+      - name: outPath
+        value: ./repo
+      - name: targetBranch
+        value: main
+      - name: warehouseName
+        value: frontend-dev-image
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: frontend-dev-image
+    sources:
+      direct: true
+      stages: []
