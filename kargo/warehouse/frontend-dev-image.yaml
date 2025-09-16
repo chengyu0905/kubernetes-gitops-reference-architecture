@@ -1,0 +1,14 @@
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: frontend-dev-image
+  namespace: develop
+spec:
+  freightCreationPolicy: Automatic
+  interval: 5m0s
+  subscriptions:
+  - image:
+      discoveryLimit: 20
+      imageSelectionStrategy: SemVer
+      repoURL: <your repo url>
+      strictSemvers: true
