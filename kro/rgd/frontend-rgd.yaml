@@ -1,0 +1,91 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: frontend-app-v2
+spec:
+  schema:
+    apiVersion: v1alpha1
+    kind: FrontendAppV2
+    spec:
+      name: string 
+      namespace: string 
+      values:
+        configMap:
+          data:
+            API_HTTP_URL: string
+            TIME_ZONE: string | default="Asia/Taipei"
+        deployment:
+          image: string
+          tag: string
+          replicas: integer | default=1
+        service:
+          port: integer | default=51001
+          targetPort: integer | default=3000
+  resources:
+    - id: config
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${schema.spec.name}-cm
+          namespace: ${schema.spec.namespace}
+        data: ${schema.spec.values.configMap.data}
+
+    - id: deploy
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+          labels:
+            app: ${schema.spec.name}
+            tier: frontend
+        spec:
+          replicas: ${schema.spec.values.deployment.replicas}
+          selector:
+            matchLabels:
+              app: ${schema.spec.name}
+              tier: frontend
+          template:
+            metadata:
+              labels:
+                app: ${schema.spec.name}
+                tier: frontend
+            spec:
+              containers:
+                - name: frontend
+                  image: ${schema.spec.values.deployment.image}:${schema.spec.values.deployment.tag}
+                  imagePullPolicy: Always
+                  ports:
+                    - name: http-server
+                      containerPort: 3000
+                  resources:
+                    limits:
+                      memory: "2Gi"
+                    requests:
+                      cpu: "500m"
+                      memory: "1Gi"
+                  envFrom:
+                    - configMapRef:
+                        name: ${schema.spec.name}-cm
+
+    - id: svc
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+          labels:
+            app: ${schema.spec.name}
+            tier: frontend
+        spec:
+          selector:
+            app: ${schema.spec.name}
+            tier: frontend
+          ports:
+            - name: http
+              protocol: TCP
+              port: ${schema.spec.values.service.port}
+              targetPort: ${schema.spec.values.service.targetPort}
